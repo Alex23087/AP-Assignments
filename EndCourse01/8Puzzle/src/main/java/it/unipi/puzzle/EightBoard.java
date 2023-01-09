@@ -2,15 +2,23 @@ package it.unipi.puzzle;
 
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author Alessandro Scala
  */
-public class EightDashboard extends javax.swing.JFrame {
+public class EightBoard extends javax.swing.JFrame {
+
+	private final java.util.List<RestartListener> restartListeners = new ArrayList<>();
 	
-	public EightDashboard() {
+	public EightBoard() {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		try {
 			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -27,18 +35,29 @@ public class EightDashboard extends javax.swing.JFrame {
 		GridLayout boardLayout = new GridLayout(3, 3);
 		boardPanel.setLayout(boardLayout);
 
+		EightController controllerLabel = new EightController();
 		JLabel tiles[] = new JLabel[9];
 		for (int i = 1; i <= 9; i++) {
 			tiles[i-1] = new EightTile(i);
 			setupComponentLayout(tiles[i-1], true);
 			boardPanel.add("tile" + i, tiles[i-1]);
+			this.addRestartListener((EightTile)tiles[i-1]);
+			tiles[i-1].addVetoableChangeListener(controllerLabel);
+			((EightTile)tiles[i-1]).flipDelegate.ifPresent(controllerLabel::addFlipListener);
+		}
+
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				if(i != j){
+					tiles[i].addPropertyChangeListener((PropertyChangeListener) tiles[j]);
+				}
+			}
 		}
 		
 		JPanel controlPanel = new JPanel();
 		GridLayout controlLayout = new GridLayout(0, 3);
 		controlPanel.setLayout(controlLayout);
-		
-		JLabel controllerLabel = new EightController();
+
 		JButton restartButton = new JButton("Restart");
 		JButton flipButton = new JButton("Flip");
 		controlPanel.add(controllerLabel);
@@ -63,9 +82,29 @@ public class EightDashboard extends javax.swing.JFrame {
 		Container contentPane = this.getContentPane();
 		contentPane.add(boardPanel, BorderLayout.NORTH);
 		contentPane.add(controlPanel, BorderLayout.SOUTH);
+
+		restartButton.addActionListener((e) -> this.fireRestartEvent());
+		this.addRestartListener(controllerLabel);
+		flipButton.addActionListener(controllerLabel::flipTiles);
+
 		this.pack();
 		this.setResizable(false);
 		centerFrame(this);
+		this.fireRestartEvent();
+	}
+
+	public void fireRestartEvent() {
+		List<Integer> labels = Arrays.stream(new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9}).collect(Collectors.toCollection(ArrayList::new));
+		Collections.shuffle(labels);
+		restartListeners.forEach(listener -> listener.restart(labels));
+	}
+
+	public void addRestartListener(RestartListener listener){
+		this.restartListeners.add(listener);
+	}
+
+	public void removeRestartListener(RestartListener listener){
+		this.restartListeners.remove(listener);
 	}
 	
 	public static void setupComponentLayout(JComponent comp, boolean isTile){

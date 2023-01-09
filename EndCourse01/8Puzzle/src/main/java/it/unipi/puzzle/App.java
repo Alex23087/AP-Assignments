@@ -13,6 +13,6 @@ public class App {
 	
 	public static void main(String[] args) {
 		System.setProperty("awt.useSystemAAFontSettings","on");
-		new EightDashboard().setVisible(true);
+		new EightBoard().setVisible(true);
 	}
 }
