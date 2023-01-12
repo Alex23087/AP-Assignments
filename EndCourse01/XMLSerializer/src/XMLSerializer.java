@@ -1,6 +1,5 @@
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class XMLSerializer {
     public static void serialize(Object[] arr, String filename){
