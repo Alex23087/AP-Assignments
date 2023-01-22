@@ -5,16 +5,6 @@ import System.IO
 import Data.List
 import Data.Char
 
---readMSet :: IO String
--- readMSet fileName = do {
---     inputFile <- openFile fileName ReadMode;
---     let readAllLines = if hIsEOF inputFile
---         then MultiSet.empty
---         else MultiSet.union readAllLines (((foldr (\x -> \y -> MultiSet.add y x) []) . sort . words . (\x -> map toLower x) . hGetLine) inputFile)
---         -- ((hGetLine . toLower . words . sort . (foldr (\x -> \y -> MultiSet.add y x) [])) inputFile)
---     in putStrLn (show (readAllLines));
--- }
-
 readMSet :: String -> IO (MSet String)
 readMSet filename = do {
     input <- readFile filename;
